@@ -1,4 +1,5 @@
 import React, { createContext, useEffect, useState } from "react";
+import run from "../gemini";
 
 export const DataContext = createContext();
 
@@ -16,32 +17,20 @@ const UserContext = ({ children }) => {
     speech.lang = "en-IN";
 
     speech.onend = () => {
-      setResponse(false);
-      setspeaking(false);
+      setResponse(false);   // ✅ AI gif OFF
+      setspeaking(false);   // ✅ button wapas
     };
 
     window.speechSynthesis.speak(speech);
   }
 
-  // ✅ BACKEND (serverless) Gemini call
-  async function callGemini(promptText) {
-    const res = await fetch("/api/gemini", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ question: promptText }),
-    });
-
-    const data = await res.json();
-    return data.text;
-  }
-
   // 🤖 AI Response
   async function aiResponse(promptText) {
-    setspeaking(true);
-    setResponse(true);
+    setspeaking(true);      // ✅ UI hold
+    setResponse(true);      // ✅ AI gif ON
     setPrompt("Thinking...");
 
-    let text = await callGemini(promptText);
+    let text = await run(promptText);
 
     let newText = text
       .replace(/\*\*/g, "")
@@ -115,6 +104,11 @@ const UserContext = ({ children }) => {
         aiResponse(command);
       }
     }
+
+    // ❌ REMOVE THIS COMPLETELY
+    // rec.onend = () => {
+    //   setspeaking(false);
+    // };
 
     setRecognition(rec);
   }, []);
